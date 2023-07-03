@@ -11,10 +11,6 @@ import (
 )
 
 func main() {
-	//if err := godotenv.Load(); err != nil {
-	//	log.Fatal(err.Error())
-	//}
-
 	databaseConf, err := config.NewDatabase()
 	if err != nil {
 		panic(err.Error())
@@ -30,8 +26,7 @@ func main() {
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "Hello World!",
-			"env":     os.Getenv("ENV"),
+			"env": os.Getenv("ENV"),
 		})
 	})
 
