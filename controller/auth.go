@@ -9,7 +9,6 @@ import (
 	"os"
 	"playbox/model"
 	"playbox/utils"
-	"strings"
 	"time"
 )
 
@@ -39,6 +38,11 @@ func FarmerRegister(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
+		if err := db.Where("phone = ?", input.Phone).First(&existingFarmer).Error; err == nil {
+			utils.HttpRespFailed(c, http.StatusBadRequest, "Phone number already registered")
+			return
+		}
+
 		hashedPassword, err := utils.Hash(input.Password)
 		if err != nil {
 			utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
@@ -55,11 +59,7 @@ func FarmerRegister(db *gorm.DB, q *gin.Engine) {
 		}
 
 		if err := db.Create(&newFarmer).Error; err != nil {
-			//utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
-			if strings.Contains(err.Error(), "ERROR: duplicate key value violates unique constraint \\\"aqua_farmers_phone_key\\\" (SQLSTATE 23505)") {
-				utils.HttpRespFailed(c, http.StatusBadRequest, "Phone number is already registered")
-				return
-			}
+			utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
 			return
 		}
 
