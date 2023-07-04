@@ -11,6 +11,10 @@ import (
 )
 
 func main() {
+	//if err := godotenv.Load(); err != nil {
+	//	log.Fatal(err.Error())
+	//}
+
 	databaseConf, err := config.NewDatabase()
 	if err != nil {
 		panic(err.Error())
@@ -32,6 +36,7 @@ func main() {
 
 	controller.FarmerRegister(db, r)
 	controller.FarmerLogin(db, r)
+	controller.Profile(db, r)
 
 	if err := r.Run(fmt.Sprintf(":%s", os.Getenv("PORT"))); err != nil {
 		panic(err.Error())
