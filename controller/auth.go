@@ -54,8 +54,7 @@ func FarmerRegister(db *gorm.DB, q *gin.Engine) {
 			Phone:     input.Phone,
 			Email:     input.Email,
 			Password:  hashedPassword,
-			CreatedAt: time.Time{},
-			UpdatedAt: time.Time{},
+			CreatedAt: time.Now(),
 		}
 
 		if err := db.Create(&newFarmer).Error; err != nil {

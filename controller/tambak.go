@@ -18,12 +18,12 @@ func Tambak(db *gorm.DB, q *gin.Engine) {
 		ID, _ := c.Get("id")
 
 		var tambaks []model.Tambak
-		if err := db.Where("aqua_farmer_id = ?", ID).Find(&tambaks).Error; err != nil {
+		if err := db.Where("aqua_farmer_id = ?", ID).Preload("AquaFarmer").Find(&tambaks).Error; err != nil {
 			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
 			return
 		}
 
-		utils.HttpRespSuccess(c, http.StatusOK, "all tambaks", tambaks)
+		utils.HttpRespSuccess(c, http.StatusFound, "all tambaks", tambaks)
 	})
 
 	r.POST("/add-tambak", middleware.Authorization(), func(c *gin.Context) {
@@ -37,7 +37,7 @@ func Tambak(db *gorm.DB, q *gin.Engine) {
 		newTambak := model.Tambak{
 			Name:         input.Name,
 			AquaFarmerID: ID.(uuid.UUID),
-			CreatedAt:    time.Time{},
+			CreatedAt:    time.Now(),
 		}
 
 		if err := db.Create(&newTambak).Error; err != nil {
@@ -45,6 +45,6 @@ func Tambak(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
-		utils.HttpRespSuccess(c, http.StatusOK, "New tambak added", newTambak)
+		utils.HttpRespSuccess(c, http.StatusCreated, "New tambak added", newTambak)
 	})
 }
