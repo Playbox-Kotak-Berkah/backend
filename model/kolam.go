@@ -19,3 +19,7 @@ type Kolam struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
+
+type AddKolam struct {
+	Name string `gorm:"binding:required" json:"name"`
+}
