@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
-	"playbox/config"
+	"playbox/config/database"
 	"playbox/controller"
 	"playbox/middleware"
 )
@@ -15,11 +15,11 @@ func main() {
 	//	log.Fatal(err.Error())
 	//}
 
-	databaseConf, err := config.NewDatabase()
+	databaseConf, err := database.NewDatabase()
 	if err != nil {
 		panic(err.Error())
 	}
-	db, err := config.MakeSupaBaseConnectionDatabase(databaseConf)
+	db, err := database.MakeSupaBaseConnectionDatabase(databaseConf)
 	if err != nil {
 		panic(err.Error())
 	}

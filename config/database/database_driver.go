@@ -1,4 +1,4 @@
-package config
+package database
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
