@@ -25,6 +25,8 @@ func Profile(db *gorm.DB, q *gin.Engine) {
 			}
 
 			utils.HttpRespSuccess(c, http.StatusOK, "Farmer profile", company)
+			return
 		}
+		utils.HttpRespFailed(c, http.StatusUnauthorized, "Not authorized")
 	})
 }

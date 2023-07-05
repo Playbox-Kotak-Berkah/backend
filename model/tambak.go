@@ -13,3 +13,7 @@ type Tambak struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
+
+type AddTambak struct {
+	Name string `gorm:"binding:required" json:"name"`
+}

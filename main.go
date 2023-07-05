@@ -37,6 +37,7 @@ func main() {
 	controller.FarmerRegister(db, r)
 	controller.FarmerLogin(db, r)
 	controller.Profile(db, r)
+	controller.Tambak(db, r)
 
 	if err := r.Run(fmt.Sprintf(":%s", os.Getenv("PORT"))); err != nil {
 		panic(err.Error())
