@@ -22,6 +22,9 @@ func MakeSupaBaseConnectionDatabase(data *Database) (*gorm.DB, error) {
 
 	if err := db.AutoMigrate(
 		&model.AquaFarmer{},
+		&model.Tambak{},
+		&model.Kolam{},
+		&model.Siklus{},
 	); err != nil {
 		return nil, err
 	}
