@@ -12,7 +12,7 @@ import (
 )
 
 func Tambak(db *gorm.DB, q *gin.Engine) {
-	r := q.Group("/api/farmer")
+	r := q.Group("/api/farmer/tambak")
 
 	r.GET("/all-tambak", middleware.Authorization(), func(c *gin.Context) {
 		ID, _ := c.Get("id")
@@ -24,6 +24,19 @@ func Tambak(db *gorm.DB, q *gin.Engine) {
 		}
 
 		utils.HttpRespSuccess(c, http.StatusFound, "all tambaks", tambaks)
+	})
+
+	r.GET("/:tambak_id", middleware.Authorization(), func(c *gin.Context) {
+		ID, _ := c.Get("id")
+		tambakID := c.Param("tambak_id")
+
+		var tambak model.Tambak
+		if err := db.Where("aqua_farmer_id = ?", ID).Where("id = ?", tambakID).Preload("AquaFarmer").First(&tambak).Error; err != nil {
+			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+			return
+		}
+
+		utils.HttpRespSuccess(c, http.StatusFound, "tambak by id", tambak)
 	})
 
 	r.POST("/add-tambak", middleware.Authorization(), func(c *gin.Context) {
