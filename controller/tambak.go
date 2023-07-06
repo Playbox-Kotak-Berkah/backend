@@ -23,7 +23,7 @@ func Tambak(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
-		utils.HttpRespSuccess(c, http.StatusFound, "all tambaks", tambaks)
+		utils.HttpRespSuccess(c, http.StatusOK, "all tambaks", tambaks)
 	})
 
 	r.GET("/:tambak_id", middleware.Authorization(), func(c *gin.Context) {
@@ -36,7 +36,7 @@ func Tambak(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
-		utils.HttpRespSuccess(c, http.StatusFound, "tambak by id", tambak)
+		utils.HttpRespSuccess(c, http.StatusOK, "tambak by id", tambak)
 	})
 
 	r.POST("/add-tambak", middleware.Authorization(), func(c *gin.Context) {

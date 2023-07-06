@@ -30,7 +30,7 @@ func Kolam(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
-		utils.HttpRespSuccess(c, http.StatusFound, "all kolams", kolams)
+		utils.HttpRespSuccess(c, http.StatusOK, "all kolams", kolams)
 	})
 
 	r.GET("/:kolam_id", middleware.Authorization(), func(c *gin.Context) {
@@ -44,7 +44,7 @@ func Kolam(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
-		utils.HttpRespSuccess(c, http.StatusFound, "kolam by id", kolam)
+		utils.HttpRespSuccess(c, http.StatusOK, "kolam by id", kolam)
 	})
 
 	r.POST("/add-kolam", middleware.Authorization(), func(c *gin.Context) {
@@ -80,4 +80,59 @@ func Kolam(db *gorm.DB, q *gin.Engine) {
 
 		utils.HttpRespSuccess(c, http.StatusCreated, "New kolam added", newKolam)
 	})
+
+	// change control status
+	r.POST(":tambak_id/:kolam_id", middleware.Authorization(), func(c *gin.Context) {
+		ID, _ := c.Get("id")
+		paramTambakID := c.Param("tambak_id")
+		tambakID, err := strconv.Atoi(paramTambakID)
+		if err != nil {
+			utils.HttpRespFailed(c, http.StatusBadRequest, err.Error())
+			return
+		}
+		kolamID := c.Param("kolam_id")
+
+		// Get query parameters
+		waterStr := c.Query("water")
+		bulbStr := c.Query("bulb")
+		fanStr := c.Query("fan")
+
+		// Process the parameters as needed
+		water, err := strconv.ParseBool(waterStr)
+		if err != nil {
+			utils.HttpRespFailed(c, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		bulb, err := strconv.ParseBool(bulbStr)
+		if err != nil {
+			utils.HttpRespFailed(c, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		fan, err := strconv.ParseBool(fanStr)
+		if err != nil {
+			utils.HttpRespFailed(c, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		// Save/update the data in the database
+		var kolam model.Kolam
+		if err := db.Where("aqua_farmer_id = ?", ID).Where("tambak_id = ?", tambakID).Where("id = ?", kolamID).Preload("AquaFarmer").First(&kolam).Error; err != nil {
+			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+			return
+		}
+
+		kolam.KeranAirStatus = water
+		kolam.KincirAirStatus = fan
+		kolam.LampuTambakStatus = bulb
+
+		if err := db.Save(&kolam).Error; err != nil {
+			utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		utils.HttpRespSuccess(c, http.StatusOK, "kolam updated successfully", kolam)
+	})
+
 }
