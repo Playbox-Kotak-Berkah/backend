@@ -6,13 +6,14 @@ import (
 )
 
 type AquaFarmer struct {
-	ID        uuid.UUID `gorm:"primaryKey" json:"id"`
-	Name      string    `gorm:"not null" json:"name"`
-	Phone     string    `gorm:"unique;default:null" json:"phone"` // default is null
-	Email     string    `gorm:"unique;not null" json:"email"`
-	Password  string    `gorm:"not null" json:"password"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID         uuid.UUID `gorm:"primaryKey" json:"id"`
+	Name       string    `gorm:"not null" json:"name"`
+	Phone      string    `gorm:"unique;default:null" json:"phone"` // default is null
+	Email      string    `gorm:"unique;not null" json:"email"`
+	Password   string    `gorm:"not null" json:"password"`
+	IsVerified bool      `gorm:"default:false" json:"is_verified"`
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
 type AquaFarmerRegisterInput struct {

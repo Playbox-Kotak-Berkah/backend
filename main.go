@@ -19,6 +19,7 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+
 	db, err := database.MakeSupaBaseConnectionDatabase(databaseConf)
 	if err != nil {
 		panic(err.Error())
@@ -37,6 +38,7 @@ func main() {
 	controller.FarmerRegister(db, r)
 	controller.FarmerLogin(db, r)
 	controller.Profile(db, r)
+	controller.Paket(db, r)
 	controller.Tambak(db, r)
 	controller.Kolam(db, r)
 	controller.Siklus(db, r)
