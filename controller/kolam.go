@@ -8,7 +8,6 @@ import (
 	"playbox/middleware"
 	"playbox/model"
 	"playbox/utils"
-	"strconv"
 	"time"
 )
 
@@ -17,12 +16,7 @@ func Kolam(db *gorm.DB, q *gin.Engine) {
 
 	r.GET("/all-kolam", middleware.Authorization(), func(c *gin.Context) {
 		ID, _ := c.Get("id")
-		paramTambakID := c.Param("tambak_id")
-		tambakID, err := strconv.Atoi(paramTambakID)
-		if err != nil {
-			utils.HttpRespFailed(c, http.StatusBadRequest, err.Error())
-			return
-		}
+		tambakID := utils.StringToInteger(c.Param("tambak_id"))
 
 		var kolams []model.Kolam
 		if err := db.Where("aqua_farmer_id = ?", ID).Where("tambak_id = ?", tambakID).Preload("AquaFarmer").Find(&kolams).Error; err != nil {
@@ -49,12 +43,7 @@ func Kolam(db *gorm.DB, q *gin.Engine) {
 
 	r.POST("/add-kolam", middleware.Authorization(), func(c *gin.Context) {
 		ID, _ := c.Get("id")
-		paramTambakID := c.Param("tambak_id")
-		tambakID, err := strconv.Atoi(paramTambakID)
-		if err != nil {
-			utils.HttpRespFailed(c, http.StatusBadRequest, err.Error())
-			return
-		}
+		tambakID := utils.StringToInteger(c.Param("tambak_id"))
 
 		var input model.AddKolam
 		if err := c.BindJSON(&input); err != nil {
@@ -69,8 +58,7 @@ func Kolam(db *gorm.DB, q *gin.Engine) {
 			LampuTambakStatus: false,
 			KincirAirStatus:   false,
 			KeranAirStatus:    false,
-
-			CreatedAt: time.Now(),
+			CreatedAt:         time.Now(),
 		}
 
 		if err := db.Create(&newKolam).Error; err != nil {
@@ -84,44 +72,18 @@ func Kolam(db *gorm.DB, q *gin.Engine) {
 	// change control status
 	r.POST(":tambak_id/:kolam_id", middleware.Authorization(), func(c *gin.Context) {
 		ID, _ := c.Get("id")
-		paramTambakID := c.Param("tambak_id")
-		tambakID, err := strconv.Atoi(paramTambakID)
-		if err != nil {
-			utils.HttpRespFailed(c, http.StatusBadRequest, err.Error())
-			return
-		}
+		tambakID := utils.StringToInteger(c.Param("tambak_id"))
 		kolamID := c.Param("kolam_id")
 
-		// Get query parameters
-		waterStr := c.Query("water")
-		bulbStr := c.Query("bulb")
-		fanStr := c.Query("fan")
-
-		// Process the parameters as needed
-		water, err := strconv.ParseBool(waterStr)
-		if err != nil {
-			utils.HttpRespFailed(c, http.StatusBadRequest, err.Error())
-			return
-		}
-
-		bulb, err := strconv.ParseBool(bulbStr)
-		if err != nil {
-			utils.HttpRespFailed(c, http.StatusBadRequest, err.Error())
-			return
-		}
-
-		fan, err := strconv.ParseBool(fanStr)
-		if err != nil {
-			utils.HttpRespFailed(c, http.StatusBadRequest, err.Error())
-			return
-		}
-
-		// Save/update the data in the database
 		var kolam model.Kolam
 		if err := db.Where("aqua_farmer_id = ?", ID).Where("tambak_id = ?", tambakID).Where("id = ?", kolamID).Preload("AquaFarmer").First(&kolam).Error; err != nil {
 			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
 			return
 		}
+
+		water := utils.StringToBool(c.Query("water"))
+		bulb := utils.StringToBool(c.Query("bulb"))
+		fan := utils.StringToBool(c.Query("fan"))
 
 		kolam.KeranAirStatus = water
 		kolam.KincirAirStatus = fan
