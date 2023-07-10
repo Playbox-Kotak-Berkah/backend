@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
-	"log"
 	"net/http"
 	"os"
 	"playbox/config/database"
@@ -13,9 +11,9 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err.Error())
-	}
+	//if err := godotenv.Load(); err != nil {
+	//	log.Fatal(err.Error())
+	//}
 
 	databaseConf, err := database.NewDatabase()
 	if err != nil {

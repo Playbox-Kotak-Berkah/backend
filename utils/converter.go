@@ -2,6 +2,7 @@ package utils
 
 import (
 	"strconv"
+	"time"
 )
 
 func StringToInteger(s string) int {
@@ -26,4 +27,10 @@ func StringToBool(s string) bool {
 		return false
 	}
 	return converted
+}
+
+func TimeNowToString() string {
+	currentTime := time.Now()
+	formatted := currentTime.Format("2006-01-02")
+	return formatted
 }

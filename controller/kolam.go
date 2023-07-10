@@ -70,7 +70,7 @@ func Kolam(db *gorm.DB, q *gin.Engine) {
 	})
 
 	// change control status
-	r.POST(":tambak_id/:kolam_id", middleware.Authorization(), func(c *gin.Context) {
+	r.POST("/:kolam_id", middleware.Authorization(), func(c *gin.Context) {
 		ID, _ := c.Get("id")
 		tambakID := utils.StringToInteger(c.Param("tambak_id"))
 		kolamID := c.Param("kolam_id")
