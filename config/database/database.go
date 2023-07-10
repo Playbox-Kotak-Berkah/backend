@@ -25,6 +25,7 @@ func MakeSupaBaseConnectionDatabase(data *Database) (*gorm.DB, error) {
 		&model.Tambak{},
 		&model.Kolam{},
 		&model.Siklus{},
+		&model.SiklusHarian{},
 		&model.Product{},
 		&model.Paket{},
 	); err != nil {
