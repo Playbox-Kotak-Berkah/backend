@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 	"playbox/middleware"
 	"playbox/model"
@@ -67,7 +68,16 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
-		siklusID := utils.StringToInteger(c.Param(":siklus_id"))
+		ID, _ := c.Get("id")
+		tambakID := utils.StringToInteger(c.Param("tambak_id"))
+		kolamID := utils.StringToInteger(c.Param("kolam_id"))
+
+		siklusID := utils.StringToInteger(c.Param("siklus_id"))
+
+		log.Println(ID)
+		log.Println(tambakID)
+		log.Println(kolamID)
+		log.Println(siklusID)
 
 		newSiklusHarian := model.SiklusHarian{
 			SiklusID:      siklusID,
@@ -76,18 +86,18 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 			PHPagi:        input.PHPagi,
 			PHSiang:       input.PHSiang,
 			PHMalam:       input.PHMalam,
-			SuhuRealtime:  0,
+			SuhuRealtime:  utils.CalculateRealtime(input.SuhuPagi, input.SuhuSiang, input.SuhuMalam),
 			SuhuPagi:      input.SuhuPagi,
 			SuhuSiang:     input.SuhuSiang,
 			SuhuMalam:     input.SuhuMalam,
-			DORealtime:    0,
+			DORealtime:    utils.CalculateRealtime(input.DOPagi, input.DOSiang, input.DOMalam),
 			DOPagi:        input.DOPagi,
 			DOSiang:       input.DOSiang,
 			DOMalam:       input.DOMalam,
-			GaramRealtime: 0,
-			GaramPagi:     input.DOPagi,
-			GaramSiang:    input.DOSiang,
-			GaramMalam:    input.DOMalam,
+			GaramRealtime: utils.CalculateRealtime(input.GaramPagi, input.GaramSiang, input.GaramMalam),
+			GaramPagi:     input.GaramPagi,
+			GaramSiang:    input.GaramSiang,
+			GaramMalam:    input.GaramMalam,
 			CreatedAt:     time.Now(),
 		}
 
