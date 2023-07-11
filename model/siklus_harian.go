@@ -7,7 +7,7 @@ import (
 type SiklusHarian struct {
 	ID       uint   `gorm:"primarykey" json:"id"`
 	Siklus   Siklus `gorm:"ForeignKey:SiklusID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	SiklusID uint   `json:"siklus_id"`
+	SiklusID int    `json:"siklus_id"`
 
 	Tanggal       string  `json:"tanggal"`
 	PHRealtime    float64 `json:"ph_realtime"`
@@ -29,4 +29,19 @@ type SiklusHarian struct {
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type InputSiklusHarian struct {
+	PHPagi     float64 `gorm:"binding:required" json:"ph_pagi"`
+	PHSiang    float64 `gorm:"binding:required" json:"ph_siang"`
+	PHMalam    float64 `gorm:"binding:required" json:"ph_malam"`
+	SuhuPagi   float64 `gorm:"binding:required" json:"suhu_pagi"`
+	SuhuSiang  float64 `gorm:"binding:required" json:"suhu_siang"`
+	SuhuMalam  float64 `gorm:"binding:required" json:"suhu_malam"`
+	DOPagi     float64 `gorm:"binding:required" json:"do_pagi"`
+	DOSiang    float64 `gorm:"binding:required" json:"do_siang"`
+	DOMalam    float64 `gorm:"binding:required" json:"do_malam"`
+	GaramPagi  float64 `gorm:"binding:required" json:"garam_pagi"`
+	GaramSiang float64 `gorm:"binding:required" json:"garam_siang"`
+	GaramMalam float64 `gorm:"binding:required" json:"garam_malam"`
 }
