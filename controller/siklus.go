@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"log"
 	"net/http"
 	"playbox/middleware"
 	"playbox/model"
@@ -22,7 +21,7 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 		kolamID := utils.StringToInteger(c.Param("kolam_id"))
 
 		var siklus []model.Siklus
-		if err := db.Where("aqua_farmer_id = ?", ID).Where("tambak_id = ?", tambakID).Where("kolam_id = ?", kolamID).Find(&siklus).Error; err != nil {
+		if err := db.Where("aqua_farmer_id = ?", ID).Where("tambak_id = ?", tambakID).Where("kolam_id = ?", kolamID).Where("end_date IS NULL OR end_date = ?", "").Find(&siklus).Error; err != nil {
 			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
 			return
 		}
@@ -68,16 +67,74 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
-		ID, _ := c.Get("id")
-		tambakID := utils.StringToInteger(c.Param("tambak_id"))
-		kolamID := utils.StringToInteger(c.Param("kolam_id"))
-
 		siklusID := utils.StringToInteger(c.Param("siklus_id"))
+		// 2023-07-10
 
-		log.Println(ID)
-		log.Println(tambakID)
-		log.Println(kolamID)
-		log.Println(siklusID)
+		//now := time.Now()
+		//
+		//var lastEntryDate string
+		//err := db.Model(&model.SiklusHarian{}).Select("tanggal").Order("created_at desc").Limit(1).Scan(&lastEntryDate).Error
+		//if err != nil {
+		//	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		//		fmt.Println("Failed to retrieve last entry date:", err)
+		//		return
+		//	}
+		//	lastEntryDate = ""
+		//}
+		//
+		//// Menghitung selisih hari antara tanggal terakhir dengan tanggal hari ini
+		//daysDiff := 0
+		//if lastEntryDate != "" {
+		//	lastEntryTime, err := time.Parse("2006-01-02", lastEntryDate)
+		//	if err != nil {
+		//		fmt.Println("Failed to parse last entry date:", err)
+		//		return
+		//	}
+		//	daysDiff = int(now.Sub(lastEntryTime).Hours() / 24)
+		//}
+		//
+		//// Membuat entri data kosong/null untuk setiap hari yang tidak memiliki entri
+		//for i := 1; i < daysDiff; i++ {
+		//	date := now.AddDate(0, 0, -i)
+		//
+		//	// Periksa apakah entri data untuk tanggal saat ini sudah ada
+		//	var siklusHarian model.SiklusHarian
+		//	err := db.Where("tanggal = ?", date.Format("2006-01-02")).First(&siklusHarian).Error
+		//	if err != nil {
+		//		if !errors.Is(err, gorm.ErrRecordNotFound) {
+		//			fmt.Println("Failed to retrieve data:", err)
+		//			return
+		//		}
+		//
+		//		// Jika entri tidak ditemukan, buat entri baru dengan data kosong/null
+		//		newSiklusHarian := model.SiklusHarian{
+		//			SiklusID:      0,
+		//			Tanggal:       date.Format("2006-01-02"),
+		//			PHRealtime:    0,
+		//			PHPagi:        0,
+		//			PHSiang:       0,
+		//			PHMalam:       0,
+		//			SuhuRealtime:  0,
+		//			SuhuPagi:      0,
+		//			SuhuSiang:     0,
+		//			SuhuMalam:     0,
+		//			DORealtime:    0,
+		//			DOPagi:        0,
+		//			DOSiang:       0,
+		//			DOMalam:       0,
+		//			GaramRealtime: 0,
+		//			GaramPagi:     0,
+		//			GaramSiang:    0,
+		//			GaramMalam:    0,
+		//			CreatedAt:     now,
+		//		}
+		//
+		//		if err := db.Create(&newSiklusHarian).Error; err != nil {
+		//			fmt.Println("Failed to create empty data:", err)
+		//			return
+		//		}
+		//	}
+		//}
 
 		newSiklusHarian := model.SiklusHarian{
 			SiklusID:      siklusID,
@@ -107,5 +164,53 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 		}
 
 		utils.HttpRespSuccess(c, http.StatusOK, "siklus harian created", newSiklusHarian)
+	})
+
+	// get all siklus harian based on siklus id
+	r.GET(":siklus_id/all-siklus-harian", middleware.Authorization(), func(c *gin.Context) {
+		siklusID := utils.StringToInteger(c.Param("siklus_id"))
+
+		var siklusHarian []model.SiklusHarian
+		if err := db.Where("siklus_id = ?", siklusID).Find(&siklusHarian).Error; err != nil {
+			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+			return
+		}
+
+		utils.HttpRespSuccess(c, http.StatusOK, "all siklus harian", siklusHarian)
+	})
+
+	r.GET(":siklus_id/latest", middleware.Authorization(), func(c *gin.Context) {
+		siklusID := utils.StringToInteger(c.Param("siklus_id"))
+
+		var siklusHarian model.SiklusHarian
+		if err := db.Where("siklus_id = ?", siklusID).Order("created_at desc").First(&siklusHarian).Error; err != nil {
+			utils.HttpRespFailed(c, http.StatusFound, err.Error())
+			return
+		}
+
+		utils.HttpRespSuccess(c, http.StatusOK, "latest siklus harian", siklusHarian)
+	})
+
+	// end siklus
+	r.POST(":siklus_id/akhiri-siklus", middleware.Authorization(), func(c *gin.Context) {
+		ID, _ := c.Get("id")
+		tambakID := utils.StringToInteger(c.Param("tambak_id"))
+		kolamID := utils.StringToInteger(c.Param("kolam_id"))
+		siklusID := utils.StringToInteger(c.Param("siklus_id"))
+
+		var siklus model.Siklus
+		if err := db.Where("aqua_farmer_id = ?", ID).Where("tambak_id = ?", tambakID).Where("kolam_id = ?", kolamID).Where("id = ?", siklusID).First(&siklus).Error; err != nil {
+			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+			return
+		}
+
+		siklus.EndDate = utils.TimeNowToString()
+
+		if err := db.Save(&siklus).Error; err != nil {
+			utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		utils.HttpRespSuccess(c, http.StatusOK, "siklus ended", siklus)
 	})
 }
