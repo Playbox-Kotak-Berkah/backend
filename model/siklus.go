@@ -23,5 +23,6 @@ type Siklus struct {
 }
 
 type SiklusInput struct {
-	Name string `gorm:"binding:required" json:"name"`
+	Name      string `gorm:"binding:required" json:"name"`
+	StartDate string `gorm:"binding:required" json:"start_date"`
 }

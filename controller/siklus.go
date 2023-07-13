@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 	"playbox/middleware"
 	"playbox/model"
@@ -41,14 +42,13 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 		ID, _ := c.Get("id")
 		tambakID := utils.StringToInteger(c.Param("tambak_id"))
 		kolamID := utils.StringToInteger(c.Param("kolam_id"))
-		startDate := utils.TimeNowToString()
 
 		newSiklus := model.Siklus{
 			AquaFarmerID: ID.(uuid.UUID),
 			TambakID:     tambakID,
 			KolamID:      kolamID,
 			Name:         input.Name,
-			StartDate:    startDate,
+			StartDate:    input.StartDate,
 		}
 
 		if err := db.Create(&newSiklus).Error; err != nil {
@@ -67,9 +67,54 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
+		ID, _ := c.Get("id")
 		siklusID := utils.StringToInteger(c.Param("siklus_id"))
 
-		// 2023-07-10
+		var siklus model.Siklus
+		if err := db.Where("id = ?", siklusID).Where("aqua_farmer_id = ?", ID).Find(&siklus).Error; err != nil {
+			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+			return
+		}
+
+		var siklusHarian model.SiklusHarian
+		if err := db.Where("siklus_id = ?", siklusID).Order("created_at desc").First(&siklusHarian).Error; err != nil {
+			utils.HttpRespFailed(c, http.StatusFound, err.Error())
+			return
+		}
+
+		timeNow := utils.TimeNowToString()
+		missingDates, days := utils.MissingDates(siklusHarian.Tanggal, timeNow)
+
+		for _, date := range missingDates {
+			newSiklusHarian := model.SiklusHarian{
+				SiklusID:      siklusID,
+				Tanggal:       date,
+				PHRealtime:    0,
+				PHPagi:        0,
+				PHSiang:       0,
+				PHMalam:       0,
+				SuhuRealtime:  0,
+				SuhuPagi:      0,
+				SuhuSiang:     0,
+				SuhuMalam:     0,
+				DORealtime:    0,
+				DOPagi:        0,
+				DOSiang:       0,
+				DOMalam:       0,
+				GaramRealtime: 0,
+				GaramPagi:     0,
+				GaramSiang:    0,
+				GaramMalam:    0,
+				CreatedAt:     time.Now(),
+			}
+
+			log.Println(days)
+
+			if err := db.Create(&newSiklusHarian).Error; err != nil {
+				utils.HttpRespFailed(c, http.StatusUnprocessableEntity, err.Error())
+				return
+			}
+		}
 
 		newSiklusHarian := model.SiklusHarian{
 			SiklusID:      siklusID,
