@@ -11,6 +11,7 @@ type User struct {
 	Phone     string    `gorm:"unique;default:null" json:"phone"` // default is null
 	Email     string    `gorm:"unique;not null" json:"email"`
 	Password  string    `gorm:"not null" json:"password"`
+	Picture   string    `gorm:"default:null" json:"picture"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -26,4 +27,8 @@ type UserRegisterInput struct {
 type UserLoginInput struct {
 	Email    string `gorm:"binding:required" json:"email"`
 	Password string `gorm:"binding:required" json:"password"`
+}
+
+type UserUpdateProfileInput struct {
+	Name string `json:"name"`
 }

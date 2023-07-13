@@ -37,6 +37,8 @@ func main() {
 
 	controller.FarmerRegister(db, r)
 	controller.FarmerLogin(db, r)
+	controller.UserRegister(db, r)
+	controller.UserLogin(db, r)
 	controller.Profile(db, r)
 	controller.Paket(db, r)
 	controller.Tambak(db, r)

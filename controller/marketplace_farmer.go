@@ -83,8 +83,8 @@ func MarketPlaceFarmer(db *gorm.DB, q *gin.Engine) {
 
 		uploaded, err := SupaBaseClient.Upload(photo)
 		if err != nil {
-			// Handle the error
-
+			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+			return
 		}
 
 		newProduct := model.Product{

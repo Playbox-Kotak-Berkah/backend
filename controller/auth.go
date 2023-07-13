@@ -22,16 +22,6 @@ func FarmerRegister(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
-		if input.Name == "" {
-			utils.HttpRespFailed(c, http.StatusBadRequest, "Name cannot be empty")
-			return
-		}
-
-		if input.Password != input.ConfirmPassword {
-			utils.HttpRespFailed(c, http.StatusUnprocessableEntity, "Password and confirm password does not match")
-			return
-		}
-
 		var existingFarmer model.AquaFarmer
 		if err := db.Where("email = ?", input.Email).First(&existingFarmer).Error; err == nil {
 			utils.HttpRespFailed(c, http.StatusBadRequest, "Email already registered")
@@ -40,6 +30,27 @@ func FarmerRegister(db *gorm.DB, q *gin.Engine) {
 
 		if err := db.Where("phone = ?", input.Phone).First(&existingFarmer).Error; err == nil {
 			utils.HttpRespFailed(c, http.StatusBadRequest, "Phone number already registered")
+			return
+		}
+
+		var existingUser model.User
+		if err := db.Where("email = ?", input.Email).First(&existingUser).Error; err == nil {
+			utils.HttpRespFailed(c, http.StatusBadRequest, "Email already registered")
+			return
+		}
+
+		if err := db.Where("phone = ?", input.Phone).First(&existingUser).Error; err == nil {
+			utils.HttpRespFailed(c, http.StatusBadRequest, "Phone number already registered")
+			return
+		}
+
+		if input.Name == "" {
+			utils.HttpRespFailed(c, http.StatusBadRequest, "Name cannot be empty")
+			return
+		}
+
+		if input.Password != input.ConfirmPassword {
+			utils.HttpRespFailed(c, http.StatusUnprocessableEntity, "Password and confirm password does not match")
 			return
 		}
 
@@ -102,6 +113,112 @@ func FarmerLogin(db *gorm.DB, q *gin.Engine) {
 
 		utils.HttpRespSuccess(c, http.StatusOK, "Parsed token", gin.H{
 			"name":  existingFarmer.Name,
+			"token": strToken,
+			"type":  accountType,
+		})
+	})
+}
+
+func UserRegister(db *gorm.DB, q *gin.Engine) {
+	r := q.Group("/api")
+	r.POST("/user-register", func(c *gin.Context) {
+		var input model.UserRegisterInput
+		if err := c.BindJSON(&input); err != nil {
+			utils.HttpRespFailed(c, http.StatusUnprocessableEntity, err.Error())
+			return
+		}
+
+		var existingFarmer model.AquaFarmer
+		if err := db.Where("email = ?", input.Email).First(&existingFarmer).Error; err == nil {
+			utils.HttpRespFailed(c, http.StatusBadRequest, "Email already registered")
+			return
+		}
+
+		if err := db.Where("phone = ?", input.Phone).First(&existingFarmer).Error; err == nil {
+			utils.HttpRespFailed(c, http.StatusBadRequest, "Phone number already registered")
+			return
+		}
+
+		var existingUser model.User
+		if err := db.Where("email = ?", input.Email).First(&existingUser).Error; err == nil {
+			utils.HttpRespFailed(c, http.StatusBadRequest, "Email already registered")
+			return
+		}
+
+		if err := db.Where("phone = ?", input.Phone).First(&existingUser).Error; err == nil {
+			utils.HttpRespFailed(c, http.StatusBadRequest, "Phone number already registered")
+			return
+		}
+
+		if input.Name == "" {
+			utils.HttpRespFailed(c, http.StatusBadRequest, "Name cannot be empty")
+			return
+		}
+
+		if input.Password != input.ConfirmPassword {
+			utils.HttpRespFailed(c, http.StatusUnprocessableEntity, "Password and confirm password does not match")
+			return
+		}
+
+		hashedPassword, err := utils.Hash(input.Password)
+		if err != nil {
+			utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
+		}
+
+		newUser := model.User{
+			ID:        uuid.New(),
+			Name:      input.Name,
+			Phone:     input.Phone,
+			Email:     input.Email,
+			Password:  hashedPassword,
+			CreatedAt: time.Now(),
+		}
+
+		if err := db.Create(&newUser).Error; err != nil {
+			utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		utils.HttpRespSuccess(c, http.StatusCreated, "New user created", newUser)
+	})
+}
+
+func UserLogin(db *gorm.DB, q *gin.Engine) {
+	r := q.Group("/api")
+	r.POST("/user-login", func(c *gin.Context) {
+		var input model.UserLoginInput
+
+		if err := c.BindJSON(&input); err != nil {
+			utils.HttpRespFailed(c, http.StatusUnprocessableEntity, err.Error())
+			return
+		}
+
+		var existingUser model.User
+		if err := db.Where("email = ?", input.Email).First(&existingUser).Error; err != nil {
+			utils.HttpRespFailed(c, http.StatusBadRequest, "Email does not exist")
+			return
+		}
+
+		if err := utils.CompareHash(input.Password, existingUser.Password); err != true {
+			utils.HttpRespFailed(c, http.StatusBadRequest, "Password does not match")
+			return
+		}
+
+		accountType := "user"
+		token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+			"id":   existingUser.ID,
+			"type": accountType,
+			"exp":  time.Now().Add(time.Hour).Unix(),
+		})
+
+		strToken, err := token.SignedString([]byte(os.Getenv("TOKEN")))
+		if err != nil {
+			utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		utils.HttpRespSuccess(c, http.StatusOK, "Parsed token", gin.H{
+			"name":  existingUser.Name,
 			"token": strToken,
 			"type":  accountType,
 		})

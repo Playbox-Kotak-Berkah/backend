@@ -12,6 +12,7 @@ type AquaFarmer struct {
 	Email      string    `gorm:"unique;not null" json:"email"`
 	Password   string    `gorm:"not null" json:"password"`
 	IsVerified bool      `gorm:"default:false" json:"is_verified"`
+	Picture    string    `gorm:"default:null" json:"picture"`
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 }
