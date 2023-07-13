@@ -87,35 +87,98 @@ func FarmerLogin(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
-		var existingFarmer model.AquaFarmer
-		if err := db.Where("email = ?", input.Email).First(&existingFarmer).Error; err != nil {
-			utils.HttpRespFailed(c, http.StatusBadRequest, "Email does not exist")
-			return
+		var user model.User
+		if err := db.Where("email = ?", input.Email).First(&user).Error; err != nil {
+			// utils.HttpRespFailed(c, http.StatusNotFound, "User not found")
 		}
 
-		if err := utils.CompareHash(input.Password, existingFarmer.Password); err != true {
-			utils.HttpRespFailed(c, http.StatusBadRequest, "Password does not match")
-			return
+		var farmer model.AquaFarmer
+		if err := db.Where("email = ?", input.Email).First(&farmer).Error; err != nil {
+			// utils.HttpRespFailed(c, http.StatusNotFound, "Email is not registered")
+			// return
 		}
 
-		accountType := "farmer"
-		token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
-			"id":   existingFarmer.ID,
-			"type": accountType,
-			"exp":  time.Now().Add(time.Hour).Unix(),
-		})
+		var accountType string
 
-		strToken, err := token.SignedString([]byte(os.Getenv("TOKEN")))
-		if err != nil {
-			utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
+		if user.ID != uuid.Nil && utils.CompareHash(input.Password, user.Password) {
+			accountType = "user"
+			token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+				"id":   user.ID,
+				"type": accountType,
+				"exp":  time.Now().Add(time.Hour).Unix(),
+			})
+
+			strToken, err := token.SignedString([]byte(os.Getenv("TOKEN")))
+			if err != nil {
+				utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
+				return
+			}
+
+			utils.HttpRespSuccess(c, http.StatusOK, "Parsed token", gin.H{
+				"name":  user.Name,
+				"token": strToken,
+				"type":  accountType,
+			})
 			return
+
 		}
 
-		utils.HttpRespSuccess(c, http.StatusOK, "Parsed token", gin.H{
-			"name":  existingFarmer.Name,
-			"token": strToken,
-			"type":  accountType,
-		})
+		if farmer.ID != uuid.Nil && utils.CompareHash(input.Password, farmer.Password) {
+			accountType = "farmer"
+			token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+				"id":   farmer.ID,
+				"type": accountType,
+				"exp":  time.Now().Add(time.Hour).Unix(),
+			})
+
+			strToken, err := token.SignedString([]byte(os.Getenv("TOKEN")))
+			if err != nil {
+				utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
+				return
+			}
+
+			utils.HttpRespSuccess(c, http.StatusOK, "Parsed token", gin.H{
+				"name":  farmer.Name,
+				"token": strToken,
+				"type":  accountType,
+			})
+			return
+
+		}
+
+		utils.HttpRespFailed(c, http.StatusForbidden, "Wrong email or password")
+		return
+
+		// original code
+		//var existingFarmer model.AquaFarmer
+		//if err := db.Where("email = ?", input.Email).First(&existingFarmer).Error; err != nil {
+		//	utils.HttpRespFailed(c, http.StatusBadRequest, "Email does not exist")
+		//	return
+		//}
+		//
+		//if err := utils.CompareHash(input.Password, existingFarmer.Password); err != true {
+		//	utils.HttpRespFailed(c, http.StatusBadRequest, "Password does not match")
+		//	return
+		//}
+		//
+		//accountType := "farmer"
+		//token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+		//	"id":   existingFarmer.ID,
+		//	"type": accountType,
+		//	"exp":  time.Now().Add(time.Hour).Unix(),
+		//})
+		//
+		//strToken, err := token.SignedString([]byte(os.Getenv("TOKEN")))
+		//if err != nil {
+		//	utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
+		//	return
+		//}
+		//
+		//utils.HttpRespSuccess(c, http.StatusOK, "Parsed token", gin.H{
+		//	"name":  existingFarmer.Name,
+		//	"token": strToken,
+		//	"type":  accountType,
+		//})
 	})
 }
 
