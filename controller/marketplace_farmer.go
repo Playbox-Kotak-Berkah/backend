@@ -76,12 +76,21 @@ func MarketPlaceFarmer(db *gorm.DB, q *gin.Engine) {
 		sold := utils.GenerateRandomInt(10, 200)
 		rating := utils.GenerateRandomFloat(0.1, 5.0)
 
-		linkPhoto, _ := SupaBaseClient.Upload(photo)
+		//linkPhoto, err := utils.CompressImageBy70Percent(photo)
+		//if err != nil {
+		//	// Handle the error
+		//}
+
+		uploaded, err := SupaBaseClient.Upload(photo)
+		if err != nil {
+			// Handle the error
+
+		}
 
 		newProduct := model.Product{
 			AquaFarmerID: ID.(uuid.UUID),
 			Name:         name,
-			Photo:        linkPhoto,
+			Photo:        uploaded,
 			Price:        price,
 			Description:  description,
 			Sold:         sold,
