@@ -78,8 +78,8 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 
 		var siklusHarian model.SiklusHarian
 		if err := db.Where("siklus_id = ?", siklusID).Order("created_at desc").First(&siklusHarian).Error; err != nil {
-			utils.HttpRespFailed(c, http.StatusFound, err.Error())
-			return
+			//utils.HttpRespFailed(c, http.StatusFound, err.Error())
+			//return
 		}
 
 		timeNow := utils.TimeNowToString()
