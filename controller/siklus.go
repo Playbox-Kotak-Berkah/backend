@@ -138,6 +138,11 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 			CreatedAt:     time.Now(),
 		}
 
+		if siklusHarian.Tanggal == timeNow {
+			utils.HttpRespFailed(c, http.StatusUnprocessableEntity, "Today's data already inputted")
+			return
+		}
+
 		if err := db.Create(&newSiklusHarian).Error; err != nil {
 			utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
 			return
