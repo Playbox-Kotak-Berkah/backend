@@ -51,4 +51,17 @@ func MarketPlaceUser(db *gorm.DB, q *gin.Engine) {
 
 		utils.HttpRespSuccess(c, http.StatusOK, "Products", products)
 	})
+
+	r.GET("/:id", middleware.Authorization(), func(c *gin.Context) {
+		productID := c.Param("id")
+
+		var product model.Product
+		if err := db.Where("id = ?", productID).First(&product).Error; err != nil {
+			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+			return
+
+		}
+
+		utils.HttpRespSuccess(c, http.StatusOK, "Product", product)
+	})
 }
