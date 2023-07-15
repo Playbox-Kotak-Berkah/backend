@@ -23,7 +23,7 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 
 		var siklus []model.Siklus
 		if err := db.Where("aqua_farmer_id = ?", ID).Where("tambak_id = ?", tambakID).Where("kolam_id = ?", kolamID).Where("end_date IS NULL OR end_date = ?", "").Find(&siklus).Error; err != nil {
-			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+			utils.HttpRespFailed(c, http.StatusOK, err.Error())
 			return
 		}
 
@@ -72,7 +72,7 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 
 		var siklus model.Siklus
 		if err := db.Where("id = ?", siklusID).Where("aqua_farmer_id = ?", ID).Find(&siklus).Error; err != nil {
-			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+			utils.HttpRespFailed(c, http.StatusOK, err.Error())
 			return
 		}
 
@@ -157,7 +157,7 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 
 		var siklusHarian []model.SiklusHarian
 		if err := db.Where("siklus_id = ?", siklusID).Find(&siklusHarian).Error; err != nil {
-			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+			utils.HttpRespFailed(c, http.StatusOK, "nil")
 			return
 		}
 
@@ -169,13 +169,13 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 
 		var siklus model.Siklus
 		if err := db.Where("id = ?", siklusID).First(&siklus).Error; err != nil {
-			utils.HttpRespFailed(c, http.StatusFound, err.Error())
+			utils.HttpRespFailed(c, http.StatusOK, err.Error())
 			return
 		}
 
 		var siklusHarian model.SiklusHarian
 		if err := db.Where("siklus_id = ?", siklusID).Order("created_at desc").First(&siklusHarian).Error; err != nil {
-			utils.HttpRespFailed(c, http.StatusFound, err.Error())
+			utils.HttpRespFailed(c, http.StatusOK, err.Error())
 			return
 		}
 
@@ -217,7 +217,7 @@ func Siklus(db *gorm.DB, q *gin.Engine) {
 
 		var siklus model.Siklus
 		if err := db.Where("aqua_farmer_id = ?", ID).Where("tambak_id = ?", tambakID).Where("kolam_id = ?", kolamID).Where("id = ?", siklusID).First(&siklus).Error; err != nil {
-			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+			utils.HttpRespFailed(c, http.StatusOK, err.Error())
 			return
 		}
 

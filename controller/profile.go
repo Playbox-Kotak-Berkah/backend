@@ -37,12 +37,6 @@ func Profile(db *gorm.DB, q *gin.Engine) {
 			utils.HttpRespSuccess(c, http.StatusOK, "Farmer profile", farmer)
 			return
 		}
-		utils.HttpRespFailed(c, http.StatusUnauthorized, "Not authorized")
-	})
-
-	r.GET("/user-profile", middleware.Authorization(), func(c *gin.Context) {
-		strType, _ := c.Get("type")
-		ID, _ := c.Get("id")
 
 		if strType == "user" {
 			var user model.User
@@ -53,11 +47,29 @@ func Profile(db *gorm.DB, q *gin.Engine) {
 
 			utils.HttpRespSuccess(c, http.StatusOK, "User profile", user)
 			return
+
 		}
 		utils.HttpRespFailed(c, http.StatusUnauthorized, "Not authorized")
 	})
 
-	r.PATCH("/user-profile", middleware.Authorization(), func(c *gin.Context) {
+	//r.GET("/user-profile", middleware.Authorization(), func(c *gin.Context) {
+	//	strType, _ := c.Get("type")
+	//	ID, _ := c.Get("id")
+	//
+	//	if strType == "user" {
+	//		var user model.User
+	//		if err := db.Where("id = ?", ID).First(&user).Error; err != nil {
+	//			utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+	//			return
+	//		}
+	//
+	//		utils.HttpRespSuccess(c, http.StatusOK, "User profile", user)
+	//		return
+	//	}
+	//	utils.HttpRespFailed(c, http.StatusUnauthorized, "Not authorized")
+	//})
+
+	r.PATCH("/farmer-profile", middleware.Authorization(), func(c *gin.Context) {
 		ID, _ := c.Get("id")
 		strType, _ := c.Get("type")
 
@@ -86,10 +98,35 @@ func Profile(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
+		if strType == "farmer" {
+			var input model.AquaFarmerEditProfileInput
+			if err := c.BindJSON(&input); err != nil {
+				utils.HttpRespFailed(c, http.StatusBadRequest, err.Error())
+				return
+			}
+
+			var farmer model.AquaFarmer
+			if err := db.Where("id = ?", ID).First(&farmer).Error; err != nil {
+				utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+				return
+			}
+
+			farmer.Name = input.Name
+			farmer.UpdatedAt = time.Now()
+
+			if err := db.Save(&farmer).Error; err != nil {
+				utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
+				return
+			}
+
+			utils.HttpRespSuccess(c, http.StatusOK, "Farmer profile updated", farmer)
+			return
+
+		}
 		utils.HttpRespFailed(c, http.StatusUnauthorized, "Not authorized")
 	})
 
-	r.PATCH("/user-profile-picture", middleware.Authorization(), func(c *gin.Context) {
+	r.PATCH("/farmer-profile-picture", middleware.Authorization(), func(c *gin.Context) {
 		ID, _ := c.Get("id")
 		strType, _ := c.Get("type")
 
@@ -118,6 +155,30 @@ func Profile(db *gorm.DB, q *gin.Engine) {
 			return
 		}
 
+		if strType == "farmer" {
+			var farmer model.AquaFarmer
+			if err := db.Where("id = ?", ID).First(&farmer).Error; err != nil {
+				utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+				return
+			}
+
+			photo, _ := c.FormFile("photo")
+			uploaded, err := SupaBaseClient.Upload(photo)
+			if err != nil {
+				utils.HttpRespFailed(c, http.StatusNotFound, err.Error())
+				return
+			}
+
+			farmer.Picture = uploaded
+
+			if err := db.Save(&farmer).Error; err != nil {
+				utils.HttpRespFailed(c, http.StatusInternalServerError, err.Error())
+				return
+			}
+
+			utils.HttpRespSuccess(c, http.StatusOK, "Farmer profile updated", farmer)
+			return
+		}
 		utils.HttpRespFailed(c, http.StatusUnauthorized, "Not authorized")
 	})
 }

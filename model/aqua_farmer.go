@@ -29,3 +29,7 @@ type AquaFarmerLoginInput struct {
 	Email    string `gorm:"binding:required" json:"email"`
 	Password string `gorm:"binding:required" json:"password"`
 }
+
+type AquaFarmerEditProfileInput struct {
+	Name string `gorm:"binding:required" json:"name"`
+}
